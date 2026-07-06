@@ -23,12 +23,12 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
 
-        // 1. Email already exist karta hai?
+        // 1. Email already exist ?
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered!");
         }
 
-        // 2. Username already exist karta hai?
+        // 2. Username already exist ?
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already taken!");
         }
@@ -47,7 +47,7 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getEmail());
 
         // 6. Token + user info return karo
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return new AuthResponse(token, user.getActualUsername(), user.getEmail());
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -71,6 +71,6 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getEmail());
 
         // 4. Token + user info return karo
-        return new AuthResponse(token, user.getUsername(), user.getEmail());
+        return new AuthResponse(token, user.getActualUsername(), user.getEmail());
     }
 }

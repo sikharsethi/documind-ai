@@ -42,6 +42,7 @@ public class User implements UserDetails {
         return email; // username ki jagah email use karenge login ke liye
     }
 
+
     @Override
     public boolean isAccountNonExpired() { return true; }
 
@@ -53,4 +54,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+    public String getActualUsername() {
+        return username;
+    }
 }
