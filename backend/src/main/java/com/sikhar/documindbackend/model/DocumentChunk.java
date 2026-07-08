@@ -1,9 +1,13 @@
 package com.sikhar.documindbackend.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "document_chunks")
 public class DocumentChunk {
@@ -25,8 +29,9 @@ public class DocumentChunk {
     @Column(name = "chunk_index")
     private Integer chunkIndex;
 
-    // Embedding will be added later (pgvector)
-    // For now we store as text, convert later
-    @Column(columnDefinition = "TEXT")
-    private String embedding;
+    // Vector embedding — stores meaning of text as numbers
+    // 1536 dimensions for OpenAI, 768 for most other models
+    @Column(columnDefinition = "vector(768)")
+    @JdbcTypeCode(SqlTypes.VECTOR)
+    private float[] embedding;
 }
