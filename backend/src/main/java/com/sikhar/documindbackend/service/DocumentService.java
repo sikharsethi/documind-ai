@@ -6,34 +6,38 @@ import com.sikhar.documindbackend.model.User;
 import com.sikhar.documindbackend.repository.DocumentChunkRepository;
 import com.sikhar.documindbackend.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.apache.pdfbox.Loader;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DocumentService {
 
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository chunkRepository;
+    private final EmbeddingService embeddingService;
 
-    // Maximum words per chunk
     private static final int CHUNK_SIZE = 500;
 
     public Document uploadDocument(MultipartFile file, User user)
             throws IOException {
 
-        // 1. Extract text from PDF using PDFBox
+        // 1. Extract text from PDF
         String extractedText = extractTextFromPdf(file);
+        log.info("Extracted {} characters from PDF", extractedText.length());
 
-        // 2. Split text into chunks
+        // 2. Split into chunks
         List<String> chunks = splitIntoChunks(extractedText, CHUNK_SIZE);
+        log.info("Created {} chunks", chunks.size());
 
         // 3. Save document metadata
         Document document = new Document();
@@ -43,12 +47,24 @@ public class DocumentService {
         document.setChunkCount(chunks.size());
         Document savedDocument = documentRepository.save(document);
 
-        // 4. Save each chunk
+        // 4. Save each chunk with its embedding
         for (int i = 0; i < chunks.size(); i++) {
+            String chunkText = chunks.get(i);
             DocumentChunk chunk = new DocumentChunk();
             chunk.setDocument(savedDocument);
-            chunk.setContent(chunks.get(i));
+            chunk.setContent(chunkText);
             chunk.setChunkIndex(i);
+
+            // Generate embedding for this chunk
+            try {
+                float[] embedding = embeddingService.generateEmbedding(chunkText);
+                chunk.setEmbedding(embedding);
+                log.info("Generated embedding for chunk {}/{}", i + 1, chunks.size());
+            } catch (Exception e) {
+                // If embedding fails, save chunk without embedding
+                log.error("Failed to generate embedding for chunk {}: {}", i, e.getMessage());
+            }
+
             chunkRepository.save(chunk);
         }
 
@@ -57,7 +73,6 @@ public class DocumentService {
 
     private String extractTextFromPdf(MultipartFile file)
             throws IOException {
-        // PDFBox 3.x mein Loader.loadPDF() uses
         PDDocument pdDocument = Loader.loadPDF(file.getBytes());
         PDFTextStripper stripper = new PDFTextStripper();
         String text = stripper.getText(pdDocument);
@@ -67,7 +82,6 @@ public class DocumentService {
 
     private List<String> splitIntoChunks(String text, int chunkSize) {
         List<String> chunks = new ArrayList<>();
-        // Split by words
         String[] words = text.split("\\s+");
         StringBuilder chunk = new StringBuilder();
         int wordCount = 0;
@@ -76,7 +90,6 @@ public class DocumentService {
             chunk.append(word).append(" ");
             wordCount++;
 
-            // When chunk is full, save it and start new one
             if (wordCount >= chunkSize) {
                 chunks.add(chunk.toString().trim());
                 chunk = new StringBuilder();
@@ -84,7 +97,6 @@ public class DocumentService {
             }
         }
 
-        // Add remaining words as last chunk
         if (chunk.length() > 0) {
             chunks.add(chunk.toString().trim());
         }
