@@ -56,13 +56,12 @@ public class DocumentService {
             chunk.setChunkIndex(i);
 
             // Generate embedding for this chunk
+            // Generate embedding for this chunk
             try {
-                float[] embedding = embeddingService.generateEmbedding(chunkText);
-                chunk.setEmbedding(embedding);
-                log.info("Generated embedding for chunk {}/{}", i + 1, chunks.size());
+                // Skipping embedding — using keyword search for RAG
+                log.info("Saving chunk {}/{}", i + 1, chunks.size());
             } catch (Exception e) {
-                // If embedding fails, save chunk without embedding
-                log.error("Failed to generate embedding for chunk {}: {}", i, e.getMessage());
+                log.error("Failed for chunk {}: {}", i, e.getMessage());
             }
 
             chunkRepository.save(chunk);
