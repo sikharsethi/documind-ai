@@ -112,11 +112,11 @@ Open `http://localhost:3000` — register, upload a PDF, and start asking questi
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/api/auth/register` | Register new user | ❌ |
-| POST | `/api/auth/login` | Login, get JWT token | ❌ |
-| POST | `/api/documents/upload` | Upload PDF | ✅ |
-| GET | `/api/documents` | Get user's documents | ✅ |
-| POST | `/api/rag/ask` | Ask question about document | ✅ |
+| POST | `/api/auth/register` | Register new user | Public |
+| POST | `/api/auth/login` | Login, get JWT | Public |
+| POST | `/api/documents/upload` | Upload PDF | 🔒 JWT Required |
+| GET | `/api/documents` | Get documents | 🔒 JWT Required |
+| POST | `/api/rag/ask` | Ask question | 🔒 JWT Required |
 
 ---
 
@@ -144,20 +144,22 @@ Large enough to contain meaningful context, small enough to stay within LLM toke
 
 ## 📁 Project Structure
 
+```
 documind-ai/
-├── backend/                    # Spring Boot application
+├── backend/
 │   └── src/main/java/com/sikhar/documindbackend/
-│       ├── controller/         # REST endpoints
-│       ├── service/            # Business logic
-│       ├── model/              # JPA entities
-│       ├── repository/         # Database queries
-│       ├── security/           # JWT + Spring Security
-│       └── dto/                # Data transfer objects
-├── frontend/                   # React application
+│       ├── controller/          # REST endpoints
+│       ├── dto/                 # Data transfer objects
+│       ├── model/               # JPA entities
+│       ├── repository/          # Database queries
+│       ├── security/            # JWT + Spring Security
+│       └── service/             # Business logic
+├── frontend/
 │   └── src/
-│       ├── pages/              # Login, Dashboard, Chat
-│       └── api/                # Axios configuration
-└── docker-compose.yml          # PostgreSQL setup
+│       ├── api/                 # Axios configuration
+│       └── pages/               # Login, Dashboard, Chat
+└── docker-compose.yml           # PostgreSQL setup
+```
 
 ---
 
