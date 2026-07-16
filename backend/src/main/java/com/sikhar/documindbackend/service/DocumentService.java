@@ -56,7 +56,6 @@ public class DocumentService {
             chunk.setChunkIndex(i);
 
             // Generate embedding for this chunk
-            // Generate embedding for this chunk
             try {
                 // Skipping embedding — using keyword search for RAG
                 log.info("Saving chunk {}/{}", i + 1, chunks.size());
